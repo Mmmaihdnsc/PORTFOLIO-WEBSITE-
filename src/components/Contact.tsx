@@ -1,7 +1,31 @@
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, Send } from 'lucide-react';
+import { Github, Linkedin, Mail, Send, CheckCircle2, Loader2 } from 'lucide-react';
+import { useState, FormEvent } from 'react';
 
 export default function Contact() {
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setStatus('submitting');
+    
+    // Simulate an API call
+    setTimeout(() => {
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+      
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setStatus('idle');
+      }, 3000);
+    }, 1500);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   return (
     <section id="contact" className="py-20 relative z-10">
       <div className="container mx-auto px-6">
@@ -60,9 +84,7 @@ export default function Contact() {
             </div>
 
             <form 
-              action="mailto:manoj2007rr@gmail.com" 
-              method="POST" 
-              encType="text/plain"
+              onSubmit={handleSubmit}
               className="glass-panel p-8 rounded-2xl border border-neon-cyan/20 space-y-6 relative overflow-hidden group"
             >
               {/* Animated border gradient */}
@@ -75,8 +97,11 @@ export default function Contact() {
                     type="text"
                     id="name"
                     name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     required
-                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all font-sans"
+                    disabled={status === 'submitting' || status === 'success'}
+                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all font-sans disabled:opacity-50"
                     placeholder="John Doe"
                   />
                 </div>
@@ -87,8 +112,11 @@ export default function Contact() {
                     type="email"
                     id="email"
                     name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
-                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all font-sans"
+                    disabled={status === 'submitting' || status === 'success'}
+                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all font-sans disabled:opacity-50"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -98,19 +126,43 @@ export default function Contact() {
                   <textarea
                     id="message"
                     name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     required
                     rows={4}
-                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition-all font-sans resize-none"
+                    disabled={status === 'submitting' || status === 'success'}
+                    className="w-full bg-dark-bg/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition-all font-sans resize-none disabled:opacity-50"
                     placeholder="Hello Manoj..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full mt-6 bg-transparent border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg font-mono font-bold py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn hover:shadow-[0_0_20px_rgba(0,243,255,0.4)]"
+                  disabled={status === 'submitting' || status === 'success'}
+                  className={`w-full mt-6 border font-mono font-bold py-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn disabled:cursor-not-allowed ${
+                    status === 'success' 
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : 'bg-transparent border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg hover:shadow-[0_0_20px_rgba(0,243,255,0.4)]'
+                  }`}
                 >
-                  <span>Send Message</span>
-                  <Send className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                  {status === 'idle' && (
+                    <>
+                      <span>Send Message</span>
+                      <Send className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                  {status === 'submitting' && (
+                    <>
+                      <span>Sending...</span>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    </>
+                  )}
+                  {status === 'success' && (
+                    <>
+                      <span>Message Sent!</span>
+                      <CheckCircle2 className="w-5 h-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </form>
